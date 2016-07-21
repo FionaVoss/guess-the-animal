@@ -1,4 +1,9 @@
 Rails.application.routes.draw do
+  root 'game#play'
+  get 'game/start'
+  get 'game/new_animal'
+  post 'game/create_animal'
+
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 

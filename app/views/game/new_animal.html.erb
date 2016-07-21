@@ -1,0 +1,5 @@
+<p>I don't have any animals! Please give me one so we can get started.</p>
+<%= form_tag("/game/create_animal", method: "post") do %>
+  <%= text_field_tag(:animal_field) %>
+  <%= submit_tag("Submit") %>
+<% end %>
