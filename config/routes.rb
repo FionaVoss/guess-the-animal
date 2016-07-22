@@ -8,6 +8,9 @@ Rails.application.routes.draw do
   get 'game/lose'
   get 'game/new_question'
   post 'game/create_question'
+  get 'game/ask'
+  get 'game/yes'
+  get 'game/no'
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

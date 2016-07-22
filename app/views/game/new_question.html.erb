@@ -1,4 +1,4 @@
-<p>Please submit a question to help me get smarter. The answer should be "Yes" for a chinchilla and "No" for a tiger.</p>
+<p>Please submit a question to help me get smarter. The answer should be "Yes" for a <%= @new_animal.name %> and "No" for a <%= @guess_animal.name %>.</p>
 <%= form_tag("/game/create_question", method: "post") do %>
   <%= text_field_tag(:question_field) %>
   <%= submit_tag("Submit") %>

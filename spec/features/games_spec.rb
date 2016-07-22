@@ -79,6 +79,50 @@ RSpec.feature "Games", type: :feature do
         expect(Animal.find_by_name('tiger').answers.count).to eq 1
         expect(Animal.find_by_name('tiger').answers.first.question.text).to eq 'Does it eat hay?'
         expect(Animal.find_by_name('tiger').answers.first.value).to eq false
+      end
+      And "I am asked to play again" do
+        expect(page).to have_content "Thank you! Click the button to play again."
+      end
+    end
+    Steps 'playing the game with two animals and one question in the database' do
+      Given 'there are two animals and one question in the database' do
+        create_animal "tiger"
+        create_animal 'chinchilla'
+        create_question 'Does it eat hay?'
+        create_answers('Does it eat hay?', 'chinchilla', 'tiger')
+      end
+      And 'I have started the game' do
+        visit "/"
+        click_link "I'm ready!"
+      end
+      Then 'I am asked the question' do
+        expect(page).to have_content 'Does it eat hay?'
+      end
+      And 'if I answer yes' do
+        click_link "Yes"
+      end
+      Then "The computer tries to guess the animal" do
+        expect(page).to have_content 'Is it a chinchilla?'
+      end
+      And 'if I answer no' do
+        click_link 'No, you lose!'
+      end
+      Then 'I am asked what my animal was and asked to submit a new question' do
+        expect(page).to have_content "What animal were you thinking of?"
+        fill_in 'animal_field', with: "horse"
+        click_button 'Submit'
+        expect(page).to have_content 'Please submit a question to help me get smarter. The answer should be "Yes" for a horse and "No" for a chinchilla.'
+        fill_in 'question_field', with: 'Does it have hooves?'
+        click_button 'Submit'
+      end
+      And 'the new animal, question, and answers are saved in the database' do
+        expect(Animal.last.name).to eq 'horse'
+        expect(Question.last.text).to eq 'Does it have hooves?'
+        expect(Animal.find_by_name('horse').answers.last.question.text).to eq 'Does it have hooves?'
+        expect(Animal.find_by_name('horse').answers.last.value).to eq true
+        expect(Animal.find_by_name('chinchilla').answers.last.question.text).to eq 'Does it have hooves?'
+        expect(Animal.find_by_name('chinchilla').answers.last.value).to eq false
+      end
       And "I am asked to play again" do
         expect(page).to have_content "Thank you! Click the button to play again."
       end
