@@ -4,6 +4,7 @@ class GameController < ApplicationController
   end
 
   def start
+    reset_session
     if Animal.count == 0
       redirect_to "/game/new_animal"
     elsif Question.count == 0
@@ -24,6 +25,32 @@ class GameController < ApplicationController
     if Animal.count == 1
       redirect_to '/'
     else
+      if !session[:true_questions].nil?
+        @true_questions = YAML.load(session[:true_questions])
+      end
+      if @true_questions.nil?
+        @true_questions = []
+      end
+      if !session[:false_questions].nil?
+        @false_questions = YAML.load(session[:false_questions])
+      end
+      if @false_questions.nil?
+        @false_questions = []
+      end
+      @true_questions.each do |current_question|
+        new_answer = Answer.new
+        new_answer.animal = new_animal
+        new_answer.question = current_question
+        new_answer.value = true
+        new_answer.save
+      end
+      @false_questions.each do |question|
+        new_answer = Answer.new
+        new_answer.animal = new_animal
+        new_answer.question = current_question
+        new_answer.value = false
+        new_answer.save
+      end
       @new_animal = new_animal
       session[:new_animal_id] = @new_animal.id
       @guess_animal = Animal.find(session[:guess_animal_id])
@@ -78,7 +105,34 @@ class GameController < ApplicationController
   end
 
   def ask
-    @question = Question.first
+    #get @guestions_asked from sessions or initialize empty array
+    if !session[:questions_asked].nil?
+      @questions_asked = YAML.load(session[:questions_asked])
+    end
+    if @questions_asked.nil?
+      @questions_asked = []
+    end
+
+    #select questions that haven't been asked yet
+    @questions_not_asked = []
+    Question.all.each do |question|
+      if !@questions_asked.include? question
+        @questions_not_asked << question
+      end
+    end
+
+    #select question with most answers from @questions.not.asked
+    @questions_not_asked.each do |question|
+      if @question.nil? || (question.answers.count > @question.answers.count)
+        @question = question
+      end
+    end
+
+    #add question to @questions_asked
+    @questions_asked << @question
+
+    #update sessions
+    session[:questions_asked] = @questions_asked.to_yaml
     session[:current_question_id] = @question.id
   end
 
@@ -92,14 +146,37 @@ class GameController < ApplicationController
 
   def respond_to_answer(current_value)
     @question = Question.find(session[:current_question_id])
-    @relevant_answers = Answer.where(question: @question, value: current_value)
+    if !session[:true_questions].nil?
+      @true_questions = YAML.load(session[:true_questions])
+    end
+    if @true_questions.nil?
+      @true_questions = []
+    end
+    if !session[:false_questions].nil?
+      @false_questions = YAML.load(session[:false_questions])
+    end
+    if @false_questions.nil?
+      @false_questions = []
+    end
+    if current_value
+      @true_questions << @question
+    else
+      @false_questions << @question
+    end
+    relevant_answers = Answer.where(question: @question, value: current_value)
     @possible_animals = []
-    @relevant_answers.each do |answer|
+    relevant_answers.each do |answer|
       if !@possible_animals.include? answer.animal
         @possible_animals << answer.animal.id
       end
     end
+    session[:true_questions] = @true_questions.to_yaml
+    session[:false_questions] = @false_questions.to_yaml
     session[:possible_animals] = @possible_animals.to_yaml
-    redirect_to '/game/guess'
+    if @possible_animals.length == 1
+      redirect_to '/game/guess'
+    else
+      redirect_to '/game/ask'
+    end
   end
 end

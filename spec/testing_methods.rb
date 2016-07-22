@@ -10,15 +10,10 @@ def create_question(question)
   new_question.save
 end
 
-def create_answers(question_text, true_animal_name, false_animal_name)
-  first_answer = Answer.new
-  first_answer.animal = Animal.find_by_name(true_animal_name)
-  first_answer.question = Question.find_by_text(question_text)
-  first_answer.value = true
-  first_answer.save
-  second_answer = Answer.new
-  second_answer.animal = Animal.find_by_name(false_animal_name)
-  second_answer.question = Question.find_by_text(question_text)
-  second_answer.value = false
-  second_answer.save
+def create_answer(question_text, animal_name, new_value)
+  answer = Answer.new
+  answer.animal = Animal.find_by_name(animal_name)
+  answer.question = Question.find_by_text(question_text)
+  answer.value = new_value
+  answer.save
 end

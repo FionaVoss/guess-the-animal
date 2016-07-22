@@ -89,7 +89,8 @@ RSpec.feature "Games", type: :feature do
         create_animal "tiger"
         create_animal 'chinchilla'
         create_question 'Does it eat hay?'
-        create_answers('Does it eat hay?', 'chinchilla', 'tiger')
+        create_answer('Does it eat hay?', 'chinchilla', true)
+        create_answer('Does it eat hay?', 'tiger', false)
       end
       And 'I have started the game' do
         visit "/"
@@ -118,10 +119,13 @@ RSpec.feature "Games", type: :feature do
       And 'the new animal, question, and answers are saved in the database' do
         expect(Animal.last.name).to eq 'horse'
         expect(Question.last.text).to eq 'Does it have hooves?'
+        expect(Animal.find_by_name('horse').answers.count).to eq 2
         expect(Animal.find_by_name('horse').answers.last.question.text).to eq 'Does it have hooves?'
         expect(Animal.find_by_name('horse').answers.last.value).to eq true
         expect(Animal.find_by_name('chinchilla').answers.last.question.text).to eq 'Does it have hooves?'
         expect(Animal.find_by_name('chinchilla').answers.last.value).to eq false
+        expect(Animal.find_by_name('horse').answers.first.question.text).to eq 'Does it eat hay?'
+        expect(Animal.find_by_name('horse').answers.first.value).to eq true
       end
       And "I am asked to play again" do
         expect(page).to have_content "Thank you! Click the button to play again."
@@ -132,7 +136,8 @@ RSpec.feature "Games", type: :feature do
         create_animal "tiger"
         create_animal 'chinchilla'
         create_question 'Does it eat hay?'
-        create_answers('Does it eat hay?', 'chinchilla', 'tiger')
+        create_answer('Does it eat hay?', 'chinchilla', true)
+        create_answer('Does it eat hay?', 'tiger', false)
       end
       And 'I have started the game' do
         visit "/"
@@ -159,7 +164,8 @@ RSpec.feature "Games", type: :feature do
         create_animal "tiger"
         create_animal 'chinchilla'
         create_question 'Does it eat hay?'
-        create_answers('Does it eat hay?', 'chinchilla', 'tiger')
+        create_answer('Does it eat hay?', 'chinchilla', true)
+        create_answer('Does it eat hay?', 'tiger', false)
       end
       And 'I have started the game' do
         visit "/"
@@ -179,6 +185,45 @@ RSpec.feature "Games", type: :feature do
       end
       Then "I am asked to play again" do
         expect(page).to have_content "Yay, I win! Thanks for playing. Click the button to play again."
+      end
+    end
+    Steps 'playing with two questions in the database' do
+      Given 'there are two questions in the database' do
+        create_question 'Does it have hooves?'
+        create_question 'Does it eat hay?'
+      end
+      And 'there are three animals' do
+        create_animal "tiger"
+        create_animal 'chinchilla'
+        create_animal 'horse'
+      end
+      And 'one question has three answers' do
+        create_answer('Does it eat hay?', 'chinchilla', true)
+        create_answer('Does it eat hay?', 'tiger', false)
+        create_answer('Does it eat hay?', 'horse', true)
+      end
+      And 'one question has two answers' do
+        create_answer('Does it have hooves?', 'horse', true)
+        create_answer('Does it have hooves?', 'chinchilla', false)
+      end
+      And 'I have started the game' do
+        visit "/"
+        click_link "I'm ready!"
+      end
+      Then 'I am asked the question that has more answers' do
+        expect(page).to have_content 'Does it eat hay?'
+      end
+      And 'if I answer "yes"' do
+        click_link "Yes"
+      end
+      Then 'I am asked the second question' do
+        expect(page).to have_content 'Does it have hooves?'
+      end
+      And 'if I answer "yes"' do
+        click_link "Yes"
+      end
+      Then "The computer tries to guess the animal" do
+        expect(page).to have_content 'Is it a horse?'
       end
     end
   end
