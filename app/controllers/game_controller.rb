@@ -83,8 +83,16 @@ class GameController < ApplicationController
   end
 
   def yes
+    respond_to_answer(true)
+  end
+
+  def no
+    respond_to_answer(false)
+  end
+
+  def respond_to_answer(current_value)
     @question = Question.find(session[:current_question_id])
-    @relevant_answers = Answer.where(question: @question, value: true)
+    @relevant_answers = Answer.where(question: @question, value: current_value)
     @possible_animals = []
     @relevant_answers.each do |answer|
       if !@possible_animals.include? answer.animal
@@ -93,8 +101,5 @@ class GameController < ApplicationController
     end
     session[:possible_animals] = @possible_animals.to_yaml
     redirect_to '/game/guess'
-  end
-
-  def no
   end
 end

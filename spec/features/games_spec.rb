@@ -84,7 +84,7 @@ RSpec.feature "Games", type: :feature do
         expect(page).to have_content "Thank you! Click the button to play again."
       end
     end
-    Steps 'playing the game with two animals and one question in the database' do
+    Steps 'winning the game with two animals and one question in the database' do
       Given 'there are two animals and one question in the database' do
         create_animal "tiger"
         create_animal 'chinchilla'
@@ -125,6 +125,60 @@ RSpec.feature "Games", type: :feature do
       end
       And "I am asked to play again" do
         expect(page).to have_content "Thank you! Click the button to play again."
+      end
+    end
+    Steps 'losing the game with two animals and one question in the database' do
+      Given 'there are two animals and one question in the database' do
+        create_animal "tiger"
+        create_animal 'chinchilla'
+        create_question 'Does it eat hay?'
+        create_answers('Does it eat hay?', 'chinchilla', 'tiger')
+      end
+      And 'I have started the game' do
+        visit "/"
+        click_link "I'm ready!"
+      end
+      Then 'I am asked the question' do
+        expect(page).to have_content 'Does it eat hay?'
+      end
+      And 'if I answer yes' do
+        click_link "Yes"
+      end
+      Then "The computer tries to guess the animal" do
+        expect(page).to have_content 'Is it a chinchilla?'
+      end
+      And 'if I answer yes' do
+        click_link 'Yes, you win!'
+      end
+      Then "I am asked to play again" do
+        expect(page).to have_content "Yay, I win! Thanks for playing. Click the button to play again."
+      end
+    end
+    Steps 'answering "no" to a question' do
+      Given 'there are two animals and one question in the database' do
+        create_animal "tiger"
+        create_animal 'chinchilla'
+        create_question 'Does it eat hay?'
+        create_answers('Does it eat hay?', 'chinchilla', 'tiger')
+      end
+      And 'I have started the game' do
+        visit "/"
+        click_link "I'm ready!"
+      end
+      Then 'I am asked the question' do
+        expect(page).to have_content 'Does it eat hay?'
+      end
+      And 'if I answer no' do
+        click_link "No"
+      end
+      Then "The computer tries to guess the animal" do
+        expect(page).to have_content 'Is it a tiger?'
+      end
+      And 'if I answer yes' do
+        click_link 'Yes, you win!'
+      end
+      Then "I am asked to play again" do
+        expect(page).to have_content "Yay, I win! Thanks for playing. Click the button to play again."
       end
     end
   end
